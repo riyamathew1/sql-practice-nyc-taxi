@@ -1,0 +1,8 @@
+data/*
+!data/.gitkeep
+*.parquet
+*.duckdb
+*.duckdb.wal
+.venv/
+__pycache__/
+.DS_Store
