@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_yellow_trips
+    description: Cleaned, renamed yellow taxi trips for {{ var('start_date') }} to {{ var('end_date') }}.
+    columns:
+      - name: trip_id
+        description: Surrogate key (hash of vendor, timestamps, locations, total).
+        tests:
+          - not_null
+          # TLC data has some exact duplicate rows, so this warns instead of failing.
+          - unique:
+              config:
+                severity: warn
+      - name: pickup_at
+        tests: [not_null]
+      - name: pickup_location_id
+        tests:
+          - not_null
+          # TODO: once stg_taxi_zones is enabled, uncomment this relationships test.
+          # - relationships:
+          #     to: ref('stg_taxi_zones')
+          #     field: location_id
+      - name: payment_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['credit_card', 'cash', 'no_charge', 'dispute', 'flex_fare', 'unknown', 'voided']
+              config:
+                severity: warn
+      - name: passenger_count
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 9
+              config:
+                severity: warn
+
+  # TODO: document and test stg_taxi_zones (location_id unique + not_null).
