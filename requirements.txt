@@ -1,0 +1,5 @@
+# Pinned to the newest versions that install on macOS system Python 3.9.
+# On Python 3.10+ you can drop the pins to get dbt 1.11+.
+dbt-core==1.10.23
+dbt-duckdb==1.10.0
+dbt-snowflake==1.10.2

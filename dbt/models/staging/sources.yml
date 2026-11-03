@@ -1,0 +1,33 @@
+version: 2
+
+# One source definition works on both targets:
+#  - dev_duckdb: both sources are read straight from the files in ../data/ (the same
+#    files taxi.duckdb uses). taxi.duckdb itself is not opened: your DuckDB CLI writes a
+#    newer file format than the duckdb Python package dbt uses, and its `trips` view uses
+#    a path relative to the repo root.
+#  - snowflake: RAW.YELLOW_TRIPS and RAW.TAXI_ZONES created by snowflake/setup.sql.
+sources:
+  - name: tlc
+    database: "{{ target.database if target.type == 'duckdb' else env_var('SNOWFLAKE_DATABASE', 'NYC_TAXI') }}"
+    schema: "{{ 'main' if target.type == 'duckdb' else 'RAW' }}"
+    tables:
+      - name: yellow_trips
+        identifier: "{{ 'trips' if target.type == 'duckdb' else 'YELLOW_TRIPS' }}"
+        description: Raw NYC TLC yellow taxi trip records, one row per trip.
+        meta:
+          external_location: "read_parquet('../data/yellow_tripdata_*.parquet', union_by_name = true)"
+        loaded_at_field: tpep_pickup_datetime
+        columns:
+          - name: tpep_pickup_datetime
+            tests: [not_null]
+          - name: PULocationID
+            tests: [not_null]
+
+      - name: taxi_zones
+        identifier: "{{ 'zones' if target.type == 'duckdb' else 'TAXI_ZONES' }}"
+        description: TLC taxi zone lookup (265 zones).
+        meta:
+          external_location: "read_csv_auto('../data/taxi_zone_lookup.csv', header = true)"
+        columns:
+          - name: LocationID
+            tests: [unique, not_null]

@@ -1,0 +1,23 @@
+# Copy to ~/.dbt/profiles.yml (or set DBT_PROFILES_DIR). Never commit real credentials.
+nyc_taxi:
+  target: dev_duckdb
+  outputs:
+    dev_duckdb:
+      type: duckdb
+      # dbt writes its models here and reads raw files from ../data/;
+      # your SQL-practice taxi.duckdb stays untouched.
+      # Relative paths resolve from where you run dbt (the dbt/ folder).
+      path: ../dbt_dev.duckdb
+      schema: analytics
+      threads: 4
+
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"        # e.g. abc12345.us-east-1
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'TRANSFORMER') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'TRANSFORMING_WH') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'NYC_TAXI') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'ANALYTICS') }}"
+      threads: 4

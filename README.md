@@ -18,3 +18,22 @@ Data dictionary: https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_tr
 Codes: payment_type 1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 0/5/6=Flex/Unknown/Voided; RatecodeID 1=Standard, 2=JFK, 3=Newark, 4=Nassau/Westchester, 5=Negotiated, 6=Group, 99=Unknown.
 
 Data files are gitignored. Re-run the download script on a new machine.
+
+## dbt + Snowflake (branch work in `dbt/`)
+The same data is modeled with [dbt](https://www.getdbt.com): raw → staging → intermediate → marts, with tests and docs.
+It runs locally on DuckDB (reading `data/` directly) and on Snowflake with the same models.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp dbt/profiles.yml.example ~/.dbt/profiles.yml   # skip if you already have one; fix paths if needed
+cd dbt
+dbt deps
+dbt debug
+dbt build --select stg_yellow_trips+
+```
+dbt writes its models to `dbt_dev.duckdb` (gitignored); `taxi.duckdb` is not changed.
+
+- Learning path: [`dbt/LEARNING_PLAN.md`](dbt/LEARNING_PLAN.md)
+- Snowflake load: [`snowflake/README.md`](snowflake/README.md) and [`snowflake/setup.sql`](snowflake/setup.sql)
+- Checklist: `PROGRESS.md`
